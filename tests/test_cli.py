@@ -390,16 +390,16 @@ class TestCliSync:
 class TestCliMCP:
     """Tests for MCP command."""
 
-    def test_mcp_success(self, runner: CliRunner, mock_logger: MagicMock) -> None:
-        """Test successful MCP command execution."""
+    def test_mcp_run_success(self, runner: CliRunner, mock_logger: MagicMock) -> None:
+        """Test successful MCP run command execution."""
         with patch('appdog._internal.cli._mcp_process') as mock_mcp:
             result = runner.invoke(
                 app,
                 [
                     'mcp',
-                    'Test Server',
-                    '--mode',
                     'run',
+                    '--name',
+                    'Test Server',
                 ],
             )
 
@@ -413,21 +413,21 @@ class TestCliMCP:
                 env_file=None,
                 with_packages=None,
                 with_editable=None,
-                transport=None,
+                transport='stdio',  # Default value for run command
                 output=None,
             )
             mock_logger.info.assert_any_call('Run MCP applications in production mode...')
 
-    def test_mcp_with_options(self, runner: CliRunner, mock_logger: MagicMock) -> None:
-        """Test MCP command with various options."""
+    def test_mcp_install_with_options(self, runner: CliRunner, mock_logger: MagicMock) -> None:
+        """Test MCP install command with various options."""
         with patch('appdog._internal.cli._mcp_process') as mock_mcp:
             result = runner.invoke(
                 app,
                 [
                     'mcp',
-                    'API Server',
-                    '--mode',
                     'install',
+                    '--name',
+                    'API Server',
                     '--force',
                     '-v',
                     'API_KEY=123',
@@ -455,8 +455,8 @@ class TestCliMCP:
             )
             mock_logger.info.assert_any_call('Install applications in MCP client...')
 
-    def test_mcp_error(self, runner: CliRunner, mock_logger: MagicMock) -> None:
-        """Test MCP command error handling."""
+    def test_mcp_install_error(self, runner: CliRunner, mock_logger: MagicMock) -> None:
+        """Test MCP install command error handling."""
         with patch('appdog._internal.cli._mcp_process') as mock_mcp:
             mock_mcp.side_effect = ValueError('Test error')
 
@@ -464,23 +464,23 @@ class TestCliMCP:
                 app,
                 [
                     'mcp',
-                    'Test Server',
+                    'install',
                 ],
             )
 
             assert result.exit_code == 1
-            mock_logger.error.assert_any_call("Failed to process MCP 'install' mode: Test error")
+            mock_logger.error.assert_any_call("Failed to process MCP install mode: Test error")
 
-    def test_mcp_dev_mode(self, runner: CliRunner, mock_logger: MagicMock) -> None:
-        """Test MCP command in dev mode."""
+    def test_mcp_dev_with_options(self, runner: CliRunner, mock_logger: MagicMock) -> None:
+        """Test MCP dev command with options."""
         with patch('appdog._internal.cli._mcp_process') as mock_mcp:
             result = runner.invoke(
                 app,
                 [
                     'mcp',
-                    'Dev Server',
-                    '--mode',
                     'dev',
+                    '--name',
+                    'Dev Server',
                     '--with',
                     'pandas',
                     '--with',
@@ -507,16 +507,16 @@ class TestCliMCP:
                 'Run MCP applications in development mode with inspector...'
             )
 
-    def test_mcp_install_mode(self, runner: CliRunner, mock_logger: MagicMock) -> None:
-        """Test MCP command in install mode."""
+    def test_mcp_install_with_env_vars(self, runner: CliRunner, mock_logger: MagicMock) -> None:
+        """Test MCP install command with environment variables."""
         with patch('appdog._internal.cli._mcp_process') as mock_mcp:
             result = runner.invoke(
                 app,
                 [
                     'mcp',
-                    'Install Server',
-                    '--mode',
                     'install',
+                    '--name',
+                    'Install Server',
                     '-v',
                     'API_KEY=abc123',
                     '-f',
@@ -539,19 +539,35 @@ class TestCliMCP:
             )
             mock_logger.info.assert_any_call('Install applications in MCP client...')
 
-    def test_mcp_invalid_mode(self, runner: CliRunner, mock_logger: MagicMock) -> None:
-        """Test MCP command with invalid mode."""
-        result = runner.invoke(
-            app,
-            [
-                'mcp',
-                'Test Server',
-                '--mode',
-                'invalid',
-            ],
-        )
+    def test_mcp_run_with_transport(self, runner: CliRunner, mock_logger: MagicMock) -> None:
+        """Test MCP run command with transport option."""
+        with patch('appdog._internal.cli._mcp_process') as mock_mcp:
+            result = runner.invoke(
+                app,
+                [
+                    'mcp',
+                    'run',
+                    '--name',
+                    'Run Server',
+                    '--transport',
+                    'sse',
+                ],
+            )
 
-        assert result.exit_code != 0  # Should fail with invalid mode
+            assert result.exit_code == 0
+            mock_mcp.assert_called_once_with(
+                name='Run Server',
+                project_dir=None,
+                mode='run',
+                force=False,
+                env_vars=None,
+                env_file=None,
+                with_packages=None,
+                with_editable=None,
+                transport='sse',
+                output=None,
+            )
+            mock_logger.info.assert_any_call('Run MCP applications in production mode...')
 
 
 class TestEnvironmentOverride:

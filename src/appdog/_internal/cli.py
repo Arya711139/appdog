@@ -343,7 +343,7 @@ def cmd_sync(
 def cmd_mcp_install(
     name: Annotated[
         str,
-        typer.Option(..., '--name', help='Name of the MCP server'),
+        typer.Option(..., '--name', '-n', help='Name of the MCP server'),
     ] = 'AppDog MCP Server',
     force: Annotated[
         bool,
@@ -351,11 +351,11 @@ def cmd_mcp_install(
     ] = False,
     env_vars: Annotated[
         list[str] | None,
-        typer.Option(..., '-v', '--env', help='Environment variables in KEY=VALUE format'),
+        typer.Option(..., '--env-var', '-v', help='Environment variables in KEY=VALUE format'),
     ] = None,
     env_file: Annotated[
         Path | None,
-        typer.Option(..., '-f', '--env-file', help='Environment file with KEY=VALUE pairs'),
+        typer.Option(..., '--env-file', '-f', help='Environment file with KEY=VALUE pairs'),
     ] = None,
     with_packages: Annotated[
         list[str] | None,
@@ -363,7 +363,7 @@ def cmd_mcp_install(
     ] = None,
     with_editable: Annotated[
         list[Path] | None,
-        typer.Option(..., '--with-editable', help='Local packages to install in editable mode'),
+        typer.Option(..., '--with-editable', '-e', help='Local packages to install in editable mode'),
     ] = None,
     project_dir: Annotated[
         Path | None,
@@ -371,7 +371,7 @@ def cmd_mcp_install(
     ] = None,
     output: Annotated[
         Path | None,
-        typer.Option(..., '--output', help='Output path for MCP server file'),
+        typer.Option(..., '--output', '-o', help='Output path for MCP server file'),
     ] = None,
 ) -> None:
     """Install applications in MCP client."""
@@ -398,7 +398,7 @@ def cmd_mcp_install(
 def cmd_mcp_run(
     name: Annotated[
         str,
-        typer.Option(..., '--name', help='Name of the MCP server'),
+        typer.Option(..., '--name', '-n', help='Name of the MCP server'),
     ] = 'AppDog MCP Server',
     force: Annotated[
         bool,
@@ -414,7 +414,7 @@ def cmd_mcp_run(
     ] = None,
     output: Annotated[
         Path | None,
-        typer.Option(..., '--output', help='Output path for MCP server file'),
+        typer.Option(..., '--output', '-o', help='Output path for MCP server file'),
     ] = None,
 ) -> None:
     """Run MCP applications in production mode."""
@@ -441,7 +441,7 @@ def cmd_mcp_run(
 def cmd_mcp_dev(
     name: Annotated[
         str,
-        typer.Option(..., '--name', help='Name of the MCP server'),
+        typer.Option(..., '--name', '-n', help='Name of the MCP server'),
     ] = 'AppDog MCP Server',
     force: Annotated[
         bool,
@@ -453,7 +453,7 @@ def cmd_mcp_dev(
     ] = None,
     with_editable: Annotated[
         list[Path] | None,
-        typer.Option(..., '--with-editable', help='Local packages to install in editable mode'),
+        typer.Option(..., '--with-editable', '-e', help='Local packages to install in editable mode'),
     ] = None,
     project_dir: Annotated[
         Path | None,
@@ -461,7 +461,7 @@ def cmd_mcp_dev(
     ] = None,
     output: Annotated[
         Path | None,
-        typer.Option(..., '--output', help='Output path for MCP server file'),
+        typer.Option(..., '--output', '-o', help='Output path for MCP server file'),
     ] = None,
 ) -> None:
     """Run MCP applications in development mode with inspector."""

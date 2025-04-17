@@ -67,13 +67,13 @@ appdog lock --upgrade
 
 ```bash
 # Generate and install an MCP server with all registered APIs
-appdog mcp
+appdog mcp install -n "My API Server"
 
 # Or run the server directly
-appdog mcp "My API Server" --mode run
+appdog mcp run -n "My API Server"
 
 # Or run in development mode with inspector
-appdog mcp "My API Server" --mode dev
+appdog mcp dev -n "My API Server"
 ```
 
 ## Project Structure
@@ -132,7 +132,7 @@ The package includes full support for MCP server generation:
 
 1. Generate an MCP server file:
     ```bash
-    appdog mcp "My API Server" --mode install
+    appdog mcp install -n "My API Server"
     ```
 
 2. Use with FastMCP or other MCP clients:
@@ -234,21 +234,43 @@ appdog sync [OPTIONS]
 #### Generate MCP Server
 
 ```bash
-appdog mcp [NAME] [OPTIONS]
+appdog mcp [COMMAND] [OPTIONS]
 ```
 
-- `NAME`: Name of the MCP server (default: "AppDog MCP Server")
-- `--mode`, `-m`: Mode to run the MCP server in:
-  - `install`: Install in a MCP client
-  - `run`: Directly run the server
-  - `dev`: Run with inspector
+Commands:
+- `install`: Install applications in MCP client
+- `run`: Run MCP applications in production mode
+- `dev`: Run MCP applications in development mode with inspector
+
+Each command supports specific options:
+
+##### Common Options (all commands)
+- `--name`, `-n`: Name of the MCP server (default: "AppDog MCP Server")
 - `--force`: Overwrite server file if it exists
-- `--env`, `-v`: Environment variables in KEY=VALUE format
+- `--project`, `-p`: Project directory (defaults to current)
+- `--output`, `-o`: Output path for MCP server file
+
+##### Install Command
+```bash
+appdog mcp install [OPTIONS]
+```
+- `--env-var`, `-v`: Environment variables in KEY=VALUE format
 - `--env-file`, `-f`: Environment file with KEY=VALUE pairs
 - `--with`: Additional packages to install in dev mode
-- `--with-editable`: Local packages to install in editable mode
+- `--with-editable`, `-e`: Local packages to install in editable mode
+
+##### Run Command
+```bash
+appdog mcp run [OPTIONS]
+```
 - `--transport`, `-t`: Transport to use for MCP run (stdio or sse)
-- `--output`: Output path for MCP server file
+
+##### Dev Command
+```bash
+appdog mcp dev [OPTIONS]
+```
+- `--with`: Additional packages to install in dev mode
+- `--with-editable`, `-e`: Local packages to install in editable mode
 
 ## Advanced Usage
 
