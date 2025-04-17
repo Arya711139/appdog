@@ -41,11 +41,14 @@ def generate_mcp_file(
     if output.exists() and not overwrite:
         raise ValueError(f'Output path already exists: {output}')
 
+    # Handle project directory
+    project_dir = Path(project_dir) if project_dir else Path.cwd()
+
     # Generate files
     template = TEMPLATES_ENV.get_template('server.j2')
     content = template.render(
         timestamp=timestamp,
-        project_dir=project_dir or Path.cwd(),
+        project_dir=project_dir.as_posix(),
         server_name=server_name,
     )
     content += '\n'
