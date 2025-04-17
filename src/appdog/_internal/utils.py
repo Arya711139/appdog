@@ -12,11 +12,6 @@ def compute_hash(data: dict[str, Any]) -> str:
     return hashlib.sha256(data_json.encode()).hexdigest()
 
 
-def get_package_dir() -> Path:
-    """Get the path to the applications package directory."""
-    return Path(__file__).parent.parent.parent.parent
-
-
 def get_project_dir() -> Path:
     """Get the path to the project directory."""
     project_dir = os.environ.get('APPDOG_PROJECT')
@@ -30,7 +25,12 @@ def get_registry_dir() -> Path:
     registry_dir = os.environ.get('APPDOG_REGISTRY')
     if registry_dir:
         return Path(registry_dir)
-    return get_package_dir() / 'src' / 'appdog'
+    return get_source_dir()
+
+
+def get_source_dir() -> Path:
+    """Get the path to the applications source directory."""
+    return Path(__file__).parent.parent
 
 
 def get_timestamp() -> str:

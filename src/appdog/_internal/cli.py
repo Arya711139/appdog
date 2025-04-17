@@ -16,7 +16,7 @@ from .logging import logger
 from .managers import project_manager
 from .project import Project
 from .settings import AppSettings
-from .utils import get_package_dir
+from .utils import get_source_dir
 
 # Initialize Rich console
 console = Console()
@@ -572,7 +572,7 @@ def _mcp_process(  # noqa: C901
     cmd = ['mcp', mode, str(output)]
 
     if mode in ['install', 'dev']:
-        package_dir = get_package_dir()
+        package_dir = get_source_dir().parent.parent
         cmd.extend(['--with-editable', str(package_dir)])
         logger.debug(f'Adding editable applications package: {package_dir}')
 
@@ -590,14 +590,14 @@ def _mcp_process(  # noqa: C901
     if with_packages:
         if mode not in ['install', 'dev']:
             raise ValueError('Additional packages are only allowed in install or dev mode')
-        for pkg in with_packages:
-            cmd.extend(['--with', pkg])
+        for package in with_packages:
+            cmd.extend(['--with', package])
 
     if with_editable:
         if mode not in ['install', 'dev']:
             raise ValueError('Additional editable packages are only allowed in install or dev mode')
-        for pkg_path in with_editable:
-            cmd.extend(['--with-editable', str(pkg_path)])
+        for package_path in with_editable:
+            cmd.extend(['--with-editable', str(package_path)])
 
     if transport:
         if mode != 'run':

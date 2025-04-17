@@ -10,9 +10,9 @@ from jinja2 import Environment, FileSystemLoader
 from .case import to_pascal_case, to_snake_case, to_title_case
 from .logging import logger
 from .specs import AppSpec, EndpointInfo
-from .utils import get_package_dir, get_timestamp
+from .utils import get_source_dir, get_timestamp
 
-TEMPLATES_DIR = get_package_dir() / 'src' / 'appdog' / '_internal' / 'templates'
+TEMPLATES_DIR = get_source_dir() / '_internal' / 'templates'
 """Path to the templates directory."""
 
 TEMPLATES_ENV = Environment(loader=FileSystemLoader(TEMPLATES_DIR), autoescape=True)
