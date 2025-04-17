@@ -162,7 +162,7 @@ def _generate_init_file(
     """Generate init file."""
     logger.debug(f'Generating init file for {name!r}')
     output = base_dir / name / '__init__.py'
-    template = TEMPLATES_ENV.get_template('__init__.py.j2')
+    template = TEMPLATES_ENV.get_template('__init__.j2')
     content = template.render(
         uri=uri,
         timestamp=timestamp,
