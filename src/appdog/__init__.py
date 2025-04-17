@@ -1,4 +1,4 @@
-__version__ = '0.1.0-b2'
+__version__ = '0.1.0-b3'
 
 from ._internal.managers import project_manager, registry_manager
 from ._internal.mcp import (
