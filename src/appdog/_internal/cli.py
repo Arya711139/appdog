@@ -18,8 +18,15 @@ from .project import Project
 from .settings import AppSettings
 from .utils import get_package_dir
 
-app = typer.Typer(help='AppDog - OpenAPI Client Generator')
+# Initialize Rich console
 console = Console()
+
+# Initialize Typer app
+app = typer.Typer(help='AppDog - OpenAPI Client Generator')
+
+# Initialize Typer MCP app
+mcp_app = typer.Typer(help='Mount applications to a MCP server or install it in a client')
+app.add_typer(mcp_app, name='mcp')
 
 
 def configure_logging(verbose: bool = False, debug: bool = False) -> None:
@@ -332,25 +339,12 @@ def cmd_sync(
         sys.exit(1)
 
 
-@app.command('mcp')
-def cmd_mcp(
+@mcp_app.command('install')
+def cmd_mcp_install(
     name: Annotated[
         str,
-        typer.Argument(help='Name of the MCP server'),
+        typer.Option(..., '--name', help='Name of the MCP server'),
     ] = 'AppDog MCP Server',
-    mode: Annotated[
-        str,
-        typer.Option(
-            ...,
-            '-m',
-            '--mode',
-            help=(
-                'Mode to run the MCP server in: '
-                "'install' to install in a MCP client, "
-                "'run' to directly run the server, or 'dev' to run with inspector"
-            ),
-        ),
-    ] = 'install',
     force: Annotated[
         bool,
         typer.Option(help='Overwrite server file if it exists'),
@@ -371,9 +365,95 @@ def cmd_mcp(
         list[Path] | None,
         typer.Option(..., '--with-editable', help='Local packages to install in editable mode'),
     ] = None,
+    project_dir: Annotated[
+        Path | None,
+        typer.Option(..., '--project', '-p', help='Project directory (defaults to current)'),
+    ] = None,
+    output: Annotated[
+        Path | None,
+        typer.Option(..., '--output', help='Output path for MCP server file'),
+    ] = None,
+) -> None:
+    """Install applications in MCP client."""
+    logger.info('Install applications in MCP client...')
+    try:
+        _mcp_process(
+            name=name,
+            project_dir=project_dir,
+            mode='install',
+            force=force,
+            env_vars=env_vars,
+            env_file=env_file,
+            with_packages=with_packages,
+            with_editable=with_editable,
+            transport=None,
+            output=output,
+        )
+    except ValueError as e:
+        logger.error(f'Failed to process MCP install mode: {e}')
+        sys.exit(1)
+
+
+@mcp_app.command('run')
+def cmd_mcp_run(
+    name: Annotated[
+        str,
+        typer.Option(..., '--name', help='Name of the MCP server'),
+    ] = 'AppDog MCP Server',
+    force: Annotated[
+        bool,
+        typer.Option(help='Overwrite server file if it exists'),
+    ] = False,
     transport: Annotated[
-        str | None,
+        str,
         typer.Option(..., '--transport', '-t', help='Transport to use for MCP run (stdio or sse)'),
+    ] = 'stdio',
+    project_dir: Annotated[
+        Path | None,
+        typer.Option(..., '--project', '-p', help='Project directory (defaults to current)'),
+    ] = None,
+    output: Annotated[
+        Path | None,
+        typer.Option(..., '--output', help='Output path for MCP server file'),
+    ] = None,
+) -> None:
+    """Run MCP applications in production mode."""
+    logger.info('Run MCP applications in production mode...')
+    try:
+        _mcp_process(
+            name=name,
+            project_dir=project_dir,
+            mode='run',
+            force=force,
+            env_vars=None,
+            env_file=None,
+            with_packages=None,
+            with_editable=None,
+            transport=transport,  # type: ignore
+            output=output,
+        )
+    except ValueError as e:
+        logger.error(f'Failed to process MCP run mode: {e}')
+        sys.exit(1)
+
+
+@mcp_app.command('dev')
+def cmd_mcp_dev(
+    name: Annotated[
+        str,
+        typer.Option(..., '--name', help='Name of the MCP server'),
+    ] = 'AppDog MCP Server',
+    force: Annotated[
+        bool,
+        typer.Option(help='Overwrite server file if it exists'),
+    ] = False,
+    with_packages: Annotated[
+        list[str] | None,
+        typer.Option(..., '--with', help='Additional packages to install in dev mode'),
+    ] = None,
+    with_editable: Annotated[
+        list[Path] | None,
+        typer.Option(..., '--with-editable', help='Local packages to install in editable mode'),
     ] = None,
     project_dir: Annotated[
         Path | None,
@@ -384,32 +464,23 @@ def cmd_mcp(
         typer.Option(..., '--output', help='Output path for MCP server file'),
     ] = None,
 ) -> None:
-    """Mount applications to a FastMCP server or install it in a client."""
-    if mode == 'install':
-        logger.info('Install applications in MCP client...')
-    elif mode == 'dev':
-        logger.info('Run MCP applications in development mode with inspector...')
-    elif mode == 'run':
-        logger.info('Run MCP applications in production mode...')
-    else:
-        logger.error(f'Invalid mode: {mode}')
-        sys.exit(1)
-
+    """Run MCP applications in development mode with inspector."""
+    logger.info('Run MCP applications in development mode with inspector...')
     try:
         _mcp_process(
             name=name,
             project_dir=project_dir,
-            mode=mode,  # type: ignore
+            mode='dev',
             force=force,
-            env_vars=env_vars,
-            env_file=env_file,
+            env_vars=None,
+            env_file=None,
             with_packages=with_packages,
             with_editable=with_editable,
-            transport=transport,  # type: ignore
+            transport=None,
             output=output,
         )
     except ValueError as e:
-        logger.error(f'Failed to process MCP {mode!r} mode: {e}')
+        logger.error(f'Failed to process MCP dev mode: {e}')
         sys.exit(1)
 
 
