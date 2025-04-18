@@ -1,12 +1,12 @@
 import asyncio
 import importlib.metadata
 import logging
-import subprocess
 import sys
 from pathlib import Path
 from typing import Annotated, Literal
 
 import typer
+from mcp.cli import cli as mcp_cli
 from rich.console import Console
 from rich.logging import RichHandler
 from rich.table import Table
@@ -21,7 +21,7 @@ from .settings import AppSettings
 console = Console()
 
 # Initialize Typer app
-app = typer.Typer(help='AppDog - OpenAPI Client Generator')
+app = typer.Typer(help='AppDog MCP Companion', no_args_is_help=True)
 
 # Initialize Typer MCP app
 mcp_app = typer.Typer(help='Mount applications to a MCP server or install it in a client')
@@ -348,6 +348,14 @@ def cmd_mcp_install(
         bool,
         typer.Option(help='Overwrite server file if it exists'),
     ] = False,
+    with_editable: Annotated[
+        Path | None,
+        typer.Option(..., '--with-editable', '-e', help='Local package to install in edit mode'),
+    ] = None,
+    with_packages: Annotated[
+        list[str] | None,
+        typer.Option(..., '--with', help='Additional packages to install'),
+    ] = None,
     env_vars: Annotated[
         list[str] | None,
         typer.Option(..., '--env-var', '-v', help='Environment variables in KEY=VALUE format'),
@@ -355,14 +363,6 @@ def cmd_mcp_install(
     env_file: Annotated[
         Path | None,
         typer.Option(..., '--env-file', '-f', help='Environment file with KEY=VALUE pairs'),
-    ] = None,
-    with_packages: Annotated[
-        list[str] | None,
-        typer.Option(..., '--with', help='Additional packages to install'),
-    ] = None,
-    with_editable: Annotated[
-        list[Path] | None,
-        typer.Option(..., '--with-editable', '-e', help='Local packages to install in edit mode'),
     ] = None,
     project_dir: Annotated[
         Path | None,
@@ -381,11 +381,10 @@ def cmd_mcp_install(
             project_dir=project_dir,
             mode='install',
             force=force,
+            with_editable=with_editable,
+            with_packages=with_packages,
             env_vars=env_vars,
             env_file=env_file,
-            with_packages=with_packages,
-            with_editable=with_editable,
-            transport=None,
             output=output,
         )
     except ValueError as e:
@@ -424,10 +423,6 @@ def cmd_mcp_run(
             project_dir=project_dir,
             mode='run',
             force=force,
-            env_vars=None,
-            env_file=None,
-            with_packages=None,
-            with_editable=None,
             transport=transport,  # type: ignore
             output=output,
         )
@@ -446,13 +441,13 @@ def cmd_mcp_dev(
         bool,
         typer.Option(help='Overwrite server file if it exists'),
     ] = False,
+    with_editable: Annotated[
+        Path | None,
+        typer.Option(..., '--with-editable', '-e', help='Local package to install in edit mode'),
+    ] = None,
     with_packages: Annotated[
         list[str] | None,
         typer.Option(..., '--with', help='Additional packages to install'),
-    ] = None,
-    with_editable: Annotated[
-        list[Path] | None,
-        typer.Option(..., '--with-editable', '-e', help='Local packages to install in edit mode'),
     ] = None,
     project_dir: Annotated[
         Path | None,
@@ -471,11 +466,8 @@ def cmd_mcp_dev(
             project_dir=project_dir,
             mode='dev',
             force=force,
-            env_vars=None,
-            env_file=None,
-            with_packages=with_packages,
             with_editable=with_editable,
-            transport=None,
+            with_packages=with_packages,
             output=output,
         )
     except ValueError as e:
@@ -548,10 +540,10 @@ def _mcp_process(  # noqa: C901
     project_dir: Path | None = None,
     mode: Literal['install', 'run', 'dev'] = 'install',
     force: bool = False,
+    with_editable: Path | None = None,
+    with_packages: list[str] | None = None,
     env_vars: list[str] | None = None,
     env_file: Path | None = None,
-    with_packages: list[str] | None = None,
-    with_editable: list[Path] | None = None,
     transport: Literal['stdio', 'sse'] | None = None,
     output: Path | None = None,
 ) -> None:
@@ -565,48 +557,31 @@ def _mcp_process(  # noqa: C901
         generate_mcp_file(
             output=output,
             project_dir=project_dir,
-            server_name=name or 'AppDog Server',
+            server_name=name,
             overwrite=force,
         )
 
-    # Build MCP command
-    cmd = ['mcp', mode, str(output)]
-
-    if mode in ['install', 'dev']:
-        cmd.extend(['--with', 'appdog'])
-
-    if env_vars:
-        if mode != 'install':
-            raise ValueError('Environment variables are only allowed in install mode')
-        for env_var in env_vars:
-            cmd.extend(['-v', env_var])
-
-    if env_file:
-        if mode != 'install':
-            raise ValueError('Environment file is only allowed in install mode')
-        cmd.extend(['-f', str(env_file)])
-
-    if with_packages:
-        if mode not in ['install', 'dev']:
-            raise ValueError('Additional packages are only allowed in install or dev mode')
-        for package in with_packages:
-            cmd.extend(['--with', package])
-
-    if with_editable:
-        if mode not in ['install', 'dev']:
-            raise ValueError('Additional editable packages are only allowed in install or dev mode')
-        for package_path in with_editable:
-            cmd.extend(['--with-editable', str(package_path)])
-
-    if transport:
-        if mode != 'run':
-            raise ValueError('Transport is only allowed in run mode')
-        cmd.extend(['--transport', transport])
-
     # Run MCP command
-    logger.debug(f'Running MCP command: {" ".join(cmd)}')
-
     try:
-        subprocess.run(cmd, check=True)  # noqa: S603
-    except subprocess.CalledProcessError as e:
-        raise ValueError(f'MCP command failed with exit code {e.returncode}') from e
+        if mode == 'install':
+            mcp_cli.install(
+                file_spec=str(output),
+                server_name=name,
+                with_editable=with_editable,
+                with_packages=with_packages or [],
+                env_vars=env_vars or [],
+                env_file=env_file,
+            )
+        elif mode == 'run':
+            mcp_cli.run(
+                file_spec=str(output),
+                transport=transport,
+            )
+        elif mode == 'dev':
+            mcp_cli.dev(
+                file_spec=str(output),
+                with_editable=with_editable,
+                with_packages=with_packages or [],
+            )
+    except Exception as e:
+        raise RuntimeError(f'MCP command failed: {e}') from e

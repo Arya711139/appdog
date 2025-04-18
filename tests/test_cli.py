@@ -409,10 +409,6 @@ class TestCliMCP:
                 project_dir=None,
                 mode='run',
                 force=False,
-                env_vars=None,
-                env_file=None,
-                with_packages=None,
-                with_editable=None,
                 transport='stdio',  # Default value for run command
                 output=None,
             )
@@ -450,7 +446,6 @@ class TestCliMCP:
                 env_file=Path('.env'),
                 with_packages=None,
                 with_editable=None,
-                transport=None,
                 output=Path('server.py'),
             )
             mock_logger.info.assert_any_call('Install applications in MCP client...')
@@ -469,7 +464,7 @@ class TestCliMCP:
             )
 
             assert result.exit_code == 1
-            mock_logger.error.assert_any_call("Failed to process MCP install mode: Test error")
+            mock_logger.error.assert_any_call('Failed to process MCP install mode: Test error')
 
     def test_mcp_dev_with_options(self, runner: CliRunner, mock_logger: MagicMock) -> None:
         """Test MCP dev command with options."""
@@ -496,11 +491,8 @@ class TestCliMCP:
                 project_dir=None,
                 mode='dev',
                 force=False,
-                env_vars=None,
-                env_file=None,
                 with_packages=['pandas', 'numpy'],
-                with_editable=[Path('.')],
-                transport=None,
+                with_editable=Path('.'),
                 output=None,
             )
             mock_logger.info.assert_any_call(
@@ -534,7 +526,6 @@ class TestCliMCP:
                 env_file=Path('.env'),
                 with_packages=None,
                 with_editable=None,
-                transport=None,
                 output=None,
             )
             mock_logger.info.assert_any_call('Install applications in MCP client...')
@@ -560,10 +551,6 @@ class TestCliMCP:
                 project_dir=None,
                 mode='run',
                 force=False,
-                env_vars=None,
-                env_file=None,
-                with_packages=None,
-                with_editable=None,
                 transport='sse',
                 output=None,
             )
