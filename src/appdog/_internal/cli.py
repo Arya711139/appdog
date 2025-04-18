@@ -16,7 +16,6 @@ from .logging import logger
 from .managers import project_manager
 from .project import Project
 from .settings import AppSettings
-from .utils import get_source_dir
 
 # Initialize Rich console
 console = Console()
@@ -359,11 +358,11 @@ def cmd_mcp_install(
     ] = None,
     with_packages: Annotated[
         list[str] | None,
-        typer.Option(..., '--with', help='Additional packages to install in dev mode'),
+        typer.Option(..., '--with', help='Additional packages to install'),
     ] = None,
     with_editable: Annotated[
         list[Path] | None,
-        typer.Option(..., '--with-editable', '-e', help='Local packages to install in editable mode'),
+        typer.Option(..., '--with-editable', '-e', help='Local packages to install in edit mode'),
     ] = None,
     project_dir: Annotated[
         Path | None,
@@ -449,11 +448,11 @@ def cmd_mcp_dev(
     ] = False,
     with_packages: Annotated[
         list[str] | None,
-        typer.Option(..., '--with', help='Additional packages to install in dev mode'),
+        typer.Option(..., '--with', help='Additional packages to install'),
     ] = None,
     with_editable: Annotated[
         list[Path] | None,
-        typer.Option(..., '--with-editable', '-e', help='Local packages to install in editable mode'),
+        typer.Option(..., '--with-editable', '-e', help='Local packages to install in edit mode'),
     ] = None,
     project_dir: Annotated[
         Path | None,
@@ -557,7 +556,9 @@ def _mcp_process(  # noqa: C901
     output: Path | None = None,
 ) -> None:
     # Generate MCP server file
-    output = output or Path.cwd() / 'appdog_mcp.py'
+    output = output or Path.cwd()
+    if not output.is_file():
+        output = output / 'appdog_mcp.py'
     if output.exists() and not force:
         logger.info(f'MCP server file generation skipped: {output} already exists')
     else:
@@ -572,9 +573,7 @@ def _mcp_process(  # noqa: C901
     cmd = ['mcp', mode, str(output)]
 
     if mode in ['install', 'dev']:
-        package_dir = get_source_dir().parent.parent
-        cmd.extend(['--with-editable', str(package_dir)])
-        logger.debug(f'Adding editable applications package: {package_dir}')
+        cmd.extend(['--with', 'appdog'])
 
     if env_vars:
         if mode != 'install':
