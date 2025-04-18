@@ -116,7 +116,7 @@ And compose your own MCP server:
 
 ```python
 import appdog.petstore
-from fastmcp import FastMCP
+from mcp.server import FastMCP
 
 mcp = FastMCP()
 
@@ -148,7 +148,7 @@ The package includes full support for MCP server generation:
 2. Use with FastMCP or other MCP clients:
     ```python
     from appdog import Project
-    from fastmcp import FastMCP
+    from mcp.server import FastMCP
   
     mcp = FastMCP()
 
