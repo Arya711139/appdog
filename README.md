@@ -16,8 +16,7 @@ Compose and generate effortlessly async API clients and MCP servers from any Ope
 
 > Claude Desktop doesn't handle yet resource templates (i.e. resource with parameters).
 
-> For **Windows users**, MCP Install command needs a manual edit of the generated Claude configuration.
-> See [this issue](https://github.com/jlowin/fastmcp/issues/202) for more details.
+> For **Windows users**, MCP Install command needs a manual edit of the generated Claude configuration. See [this issue](https://github.com/jlowin/fastmcp/issues/202) for more details.
 
 ## Overview
 
