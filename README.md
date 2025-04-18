@@ -9,6 +9,11 @@
 
 Compose and generate effortlessly async API clients and MCP servers from any OpenAPI specifications.
 
+<br>
+<p align="center">
+  <img src="https://raw.githubusercontent.com/rodolphebarbanneau/appdog/refs/heads/main/docs/appdog.gif" alt="AppDog demo">
+</p>
+
 ## Overview
 
 AppDog is a Python package that simplifies working with OpenAPI-based APIs by:
