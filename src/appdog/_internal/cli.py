@@ -562,14 +562,17 @@ def _mcp_process(  # noqa: C901
         )
 
     # Run MCP command
+    with_packages = ['appdog', *(with_packages or [])]
+    env_vars = env_vars or []
+
     try:
         if mode == 'install':
             mcp_cli.install(
                 file_spec=str(output),
                 server_name=name,
                 with_editable=with_editable,
-                with_packages=with_packages or [],
-                env_vars=env_vars or [],
+                with_packages=with_packages,
+                env_vars=env_vars,
                 env_file=env_file,
             )
         elif mode == 'run':
@@ -581,7 +584,7 @@ def _mcp_process(  # noqa: C901
             mcp_cli.dev(
                 file_spec=str(output),
                 with_editable=with_editable,
-                with_packages=with_packages or [],
+                with_packages=with_packages,
             )
     except Exception as e:
         raise RuntimeError(f'MCP command failed: {e}') from e
