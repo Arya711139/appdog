@@ -9,12 +9,13 @@ from mcp.server.fastmcp import FastMCP
 from appdog import Project
 
 PROJECT_DIR = '{{ project_dir }}'
+REGISTRY_DIR = '{{ registry_dir }}'
 
 # Create MCP server
 mcp = FastMCP(name='{{ server_name }}')
 
 # Mount project applications
-project = Project.load(project_dir=PROJECT_DIR)
+project = Project.load(project_dir=PROJECT_DIR, registry_dir=REGISTRY_DIR)
 project.mount(mcp)
 
 # Additional setup...

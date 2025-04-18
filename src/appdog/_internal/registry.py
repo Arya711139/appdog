@@ -1,4 +1,5 @@
 import shutil
+import sys
 from pathlib import Path
 from threading import Lock
 from typing import ClassVar, NamedTuple
@@ -58,6 +59,7 @@ class Registry:
     @classmethod
     def load(cls, registry_dir: Path | str | None = None) -> Self:
         """Load the applications registry from the given directory."""
+        # Load registry
         with cls._lock:
             if registry_dir is None:
                 if cls._instance is not None:
@@ -66,6 +68,13 @@ class Registry:
                 self = cls._instance
             else:
                 self = cls(registry_dir)
+        # Add registry directory to search paths
+        registry_dir = str(self.paths.dir)
+        package = sys.modules['appdog']
+        if hasattr(package, '__path__'):
+            if registry_dir not in package.__path__:
+                logger.debug(f'Adding registry path to AppDog package: {registry_dir}')
+                package.__path__.append(registry_dir)
         self.specs.read()
         return self
 

@@ -557,6 +557,7 @@ def _mcp_process(  # noqa: C901
         generate_mcp_file(
             output=output,
             project_dir=project_dir,
+            registry_dir=None,
             server_name=name,
             overwrite=force,
         )
