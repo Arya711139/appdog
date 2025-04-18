@@ -575,6 +575,7 @@ def _mcp_process(  # noqa: C901
                 env_vars=env_vars,
                 env_file=env_file,
             )
+            logger.info(f'Successfully installed MCP server for {name!r}')
         elif mode == 'run':
             mcp_cli.run(
                 file_spec=str(output),
