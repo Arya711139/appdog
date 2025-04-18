@@ -1,4 +1,4 @@
-__version__ = '0.1.0-b5'
+__version__ = '0.1.0-b6'
 
 from ._internal.clients import BaseClient, ClientConfig
 from ._internal.managers import project_manager, registry_manager
