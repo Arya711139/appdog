@@ -14,6 +14,9 @@ Compose and generate effortlessly async API clients and MCP servers from any Ope
   <img src="https://raw.githubusercontent.com/rodolphebarbanneau/appdog/refs/heads/main/docs/appdog.gif" alt="AppDog demo">
 </p>
 
+> For **Windows users**, MCP Install command needs a manual edit of the generated Claude configuration.
+> See [this issue](https://github.com/jlowin/fastmcp/issues/202) for more details.
+
 ## Overview
 
 AppDog is a Python package that simplifies working with OpenAPI-based APIs by:
