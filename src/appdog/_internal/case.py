@@ -1,10 +1,6 @@
 import re
 
-CHAR_MARK = '\ue000'
-"""A special character used as a placeholder for string transformations."""
-
-CHAR_SEP = '\ue001'
-"""A special character used as a separator for string transformations."""
+from .typing import CHAR_MARK, CHAR_SEP
 
 
 def to_pascal_case(string: str) -> str:

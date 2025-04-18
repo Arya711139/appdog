@@ -17,6 +17,8 @@ mcp = FastMCP(name='{{ server_name }}')
 project = Project.load(project_dir=PROJECT_DIR)
 project.mount(mcp)
 
+# Additional setup...
+
 # Run the server
 if __name__ == "__main__":
     mcp.run()

@@ -9,13 +9,23 @@ from jinja2 import Environment, FileSystemLoader
 
 from .case import to_pascal_case, to_snake_case, to_title_case
 from .logging import logger
+from .schema import json_schema_to_annotation
 from .specs import AppSpec, EndpointInfo
 from .utils import get_source_dir, get_timestamp
+
+SCHEMA_TYPE_MAPPING: dict[str, str] = {
+    'null': 'None',
+    'boolean': 'bool',
+    'integer': 'int',
+    'number': 'float',
+    'string': 'str',
+}
+"""Mapping of OpenAPI schema types to Python types."""
 
 TEMPLATES_DIR = get_source_dir() / '_internal' / 'templates'
 """Path to the templates directory."""
 
-TEMPLATES_ENV = Environment(loader=FileSystemLoader(TEMPLATES_DIR), autoescape=True)
+TEMPLATES_ENV = Environment(loader=FileSystemLoader(TEMPLATES_DIR), autoescape=False)  # noqa: S701
 """Jinja2 environment for rendering templates."""
 
 
@@ -140,13 +150,11 @@ def _generate_client_file(
         class_name=class_name,
         endpoints=endpoints,
         base_url=base_url,
-        get_query_params=_get_query_params,
         get_path_params=_get_path_params,
-        get_python_type=_get_python_type,
-        get_request_body_type=_get_request_body_type,
-        get_response_model=_get_response_model,
-        get_response_type=_get_response_type,
-        has_query_params=_has_query_params,
+        get_query_params=_get_query_params,
+        resolve_param_annotation=_resolve_param_annotation,
+        resolve_request_body_annotation=_resolve_request_body_annotation,
+        resolve_response_annotation=_resolve_response_annotation,
         to_snake_case=to_snake_case,
     )
     content += '\n'
@@ -225,55 +233,31 @@ def _generate_models_file(
         output.write_text(content)
 
 
-def _get_query_params(endpoint: EndpointInfo) -> list[dict[str, Any]]:
-    """Get query parameters for the endpoint."""
-    return [p for p in endpoint.parameters if p.get('in') == 'query']
-
-
 def _get_path_params(endpoint: EndpointInfo) -> list[dict[str, Any]]:
     """Get path parameters for the endpoint."""
     return [p for p in endpoint.parameters if p.get('in') == 'path']
 
 
-def _get_python_type(param: dict[str, Any]) -> str:
-    """Convert OpenAPI parameter type to Python type."""
-    mapping = {'integer': 'int', 'string': 'str', 'boolean': 'bool', 'number': 'float'}
-
-    schema = param.get('schema', {})
-    param_type = schema.get('type') if schema else param.get('type')
-    if param_type in mapping:
-        return mapping[param_type]
-    return 'Any'
+def _get_query_params(endpoint: EndpointInfo) -> list[dict[str, Any]]:
+    """Get query parameters for the endpoint."""
+    return [p for p in endpoint.parameters if p.get('in') == 'query']
 
 
-def _get_request_body_type(endpoint: EndpointInfo) -> str:
-    """Get request body type."""
-    assert endpoint.request_body, 'Endpoint must have a request body'
-    schema = endpoint.request_body.get('content', {}).get('application/json', {}).get('schema', {})
-    if schema.get('$ref'):
-        name = schema.get('$ref').split('/')[-1]
-        return f'models.{name}'
-    return 'dict[str, Any]'
+def _resolve_param_annotation(schema: dict[str, Any]) -> str:
+    """Resolve parameter annotation from the provided OpenAPI schema."""
+    definition = schema.get('schema', {})
+    return json_schema_to_annotation(definition)
 
 
-def _get_response_model(endpoint: EndpointInfo) -> str | None:
-    """Extract the response model name from the endpoint response."""
-    schema = (
-        endpoint.responses.get('200', {})
-        .get('content', {})
-        .get('application/json', {})
-        .get('schema', {})
-    )
-    if schema.get('$ref'):
-        return f'models.{schema.get("$ref").split("/")[-1]}'
-    return None
+def _resolve_request_body_annotation(schema: dict[str, Any]) -> str:
+    """Resolve request body annotation from the provided OpenAPI schema."""
+    content = schema.get('content', {})
+    definition = content.get('application/json', {}).get('schema', {})
+    return json_schema_to_annotation(definition)
 
 
-def _get_response_type(endpoint: EndpointInfo) -> str:
-    """Convert OpenAPI response type to Python type."""
-    return _get_response_model(endpoint) or 'dict[str, Any]'
-
-
-def _has_query_params(endpoint: EndpointInfo) -> bool:
-    """Check if the endpoint has query parameters."""
-    return any(p.get('in') == 'query' for p in endpoint.parameters)
+def _resolve_response_annotation(schema: dict[str, Any]) -> str:
+    """Resolve response annotation from the provided OpenAPI schema."""
+    content = schema.get('200', {}).get('content', {})
+    definition = content.get('application/json', {}).get('schema', {})
+    return json_schema_to_annotation(definition)

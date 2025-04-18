@@ -130,7 +130,7 @@ class Store(MutableMapping[str, _T]):
     def _write_json(self) -> None:
         try:
             self.validate()
-            data = self.data.model_dump(mode='json')
+            data = self.data.model_dump(mode='json', exclude_unset=True)
             data = json.dumps(data) or ''
             with open(self.file_path, 'w') as f:
                 f.write(data)
@@ -140,7 +140,7 @@ class Store(MutableMapping[str, _T]):
     def _write_yaml(self) -> None:
         try:
             self.validate()
-            data = self.data.model_dump(mode='json')
+            data = self.data.model_dump(mode='json', exclude_unset=True)
             data = yaml.dump(data) or ''
             with open(self.file_path, 'w') as f:
                 f.write(data)

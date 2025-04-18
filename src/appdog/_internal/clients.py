@@ -5,6 +5,7 @@ from typing import Any, TypeVar
 
 import httpx
 from httpx import AsyncClient, Timeout
+from pydantic import TypeAdapter
 from typing_extensions import Self, TypedDict, Unpack
 
 from .errors import (
@@ -16,6 +17,7 @@ from .errors import (
 )
 from .project import Project
 from .settings import ClientSettings
+from .typing import Undefined, UndefinedType
 
 _T = TypeVar('_T')
 
@@ -40,6 +42,9 @@ class ClientConfig(TypedDict, total=False):
 
     timeout: float | None
     """Request timeout in seconds."""
+
+    strict: bool | None
+    """Whether to raise an error for invalid response data."""
 
 
 class BaseClient:
@@ -90,6 +95,30 @@ class BaseClient:
             timeout=self._settings.timeout,
         )
 
+    @typing.overload
+    async def _request(
+        self,
+        method: str,
+        path: str,
+        *,
+        params: dict[str, Any] | None = None,
+        data: Any | None = None,
+        headers: dict[str, str] | None = None,
+        return_type: UndefinedType = Undefined,
+    ) -> Any: ...
+
+    @typing.overload
+    async def _request(
+        self,
+        method: str,
+        path: str,
+        *,
+        params: dict[str, Any] | None = None,
+        data: Any | None = None,
+        headers: dict[str, str] | None = None,
+        return_type: TypeAdapter[_T] | type[_T],
+    ) -> _T: ...
+
     async def _request(  # noqa: C901
         self,
         method: str,
@@ -98,7 +127,7 @@ class BaseClient:
         params: dict[str, Any] | None = None,
         data: Any | None = None,
         headers: dict[str, str] | None = None,
-        return_type: type[_T] | None = None,
+        return_type: TypeAdapter[_T] | type[_T] | UndefinedType = Undefined,
     ) -> Any | _T:
         """Make an API request.
 
@@ -108,10 +137,10 @@ class BaseClient:
             params: Query parameters
             data: Request body data
             headers: Additional headers
-            return_type: Optional Pydantic model to parse the response
+            return_type: Type or Pydantic type adapter to convert the response data
 
         Returns:
-            API response data, optionally parsed into the provided model
+            API response data, optionally converted with the provided type
 
         Raises:
             ClientError: If the request fails.
@@ -188,25 +217,21 @@ class BaseClient:
             except json.JSONDecodeError:
                 response_data = response.text
 
-            if return_type is None:
+            if return_type is Undefined:
                 return response_data
 
             try:
-                constructor = typing.cast(Any, return_type)
-                if hasattr(constructor, 'model_validate') and callable(constructor.model_validate):
-                    response_data = constructor.model_validate(response_data)
-                elif isinstance(response_data, dict):
-                    response_data = constructor(**response_data)
-                else:
-                    response_data = constructor(response_data)
+                if not isinstance(return_type, TypeAdapter):
+                    return_type = TypeAdapter(return_type)
+                return return_type.validate_python(response_data)
             except Exception as e:
+                if not self._settings.strict:
+                    return response_data
                 raise ResponseError(
                     f'Validation error: {e}',
                     status_code=response.status_code,
                     response=response,
                 ) from e
-
-            return response_data
 
         except httpx.RequestError as e:
             raise RequestError('Request failed') from e
@@ -214,22 +239,68 @@ class BaseClient:
             if close_on_exit:
                 await client.aclose()
 
+    @typing.overload
     async def _get(
         self,
         path: str,
         *,
+        data: Any | None = None,
         params: dict[str, Any] | None = None,
         headers: dict[str, str] | None = None,
-        return_type: type[_T] | None = None,
+        return_type: UndefinedType = Undefined,
+    ) -> Any: ...
+
+    @typing.overload
+    async def _get(
+        self,
+        path: str,
+        *,
+        data: Any | None = None,
+        params: dict[str, Any] | None = None,
+        headers: dict[str, str] | None = None,
+        return_type: TypeAdapter[_T] | type[_T],
+    ) -> _T: ...
+
+    async def _get(
+        self,
+        path: str,
+        *,
+        data: Any | None = None,
+        params: dict[str, Any] | None = None,
+        headers: dict[str, str] | None = None,
+        return_type: TypeAdapter[_T] | type[_T] | UndefinedType = Undefined,
     ) -> Any | _T:
         """Make a GET request."""
         return await self._request(
             'GET',
             path,
+            data=data,
             params=params,
             headers=headers,
             return_type=return_type,
         )
+
+    @typing.overload
+    async def _post(
+        self,
+        path: str,
+        *,
+        data: Any | None = None,
+        params: dict[str, Any] | None = None,
+        headers: dict[str, str] | None = None,
+        return_type: UndefinedType = Undefined,
+    ) -> Any: ...
+
+    @typing.overload
+    async def _post(
+        self,
+        path: str,
+        *,
+        data: Any | None = None,
+        params: dict[str, Any] | None = None,
+        headers: dict[str, str] | None = None,
+        return_type: TypeAdapter[_T] | type[_T],
+    ) -> _T: ...
 
     async def _post(
         self,
@@ -238,7 +309,7 @@ class BaseClient:
         data: Any | None = None,
         params: dict[str, Any] | None = None,
         headers: dict[str, str] | None = None,
-        return_type: type[_T] | None = None,
+        return_type: TypeAdapter[_T] | type[_T] | UndefinedType = Undefined,
     ) -> Any | _T:
         """Make a POST request."""
         return await self._request(
@@ -250,6 +321,7 @@ class BaseClient:
             return_type=return_type,
         )
 
+    @typing.overload
     async def _put(
         self,
         path: str,
@@ -257,7 +329,28 @@ class BaseClient:
         data: Any | None = None,
         params: dict[str, Any] | None = None,
         headers: dict[str, str] | None = None,
-        return_type: type[_T] | None = None,
+        return_type: UndefinedType = Undefined,
+    ) -> Any: ...
+
+    @typing.overload
+    async def _put(
+        self,
+        path: str,
+        *,
+        data: Any | None = None,
+        params: dict[str, Any] | None = None,
+        headers: dict[str, str] | None = None,
+        return_type: TypeAdapter[_T] | type[_T],
+    ) -> _T: ...
+
+    async def _put(
+        self,
+        path: str,
+        *,
+        data: Any | None = None,
+        params: dict[str, Any] | None = None,
+        headers: dict[str, str] | None = None,
+        return_type: TypeAdapter[_T] | type[_T] | UndefinedType = Undefined,
     ) -> Any | _T:
         """Make a PUT request."""
         return await self._request(
@@ -269,6 +362,7 @@ class BaseClient:
             return_type=return_type,
         )
 
+    @typing.overload
     async def _patch(
         self,
         path: str,
@@ -276,7 +370,28 @@ class BaseClient:
         data: Any | None = None,
         params: dict[str, Any] | None = None,
         headers: dict[str, str] | None = None,
-        return_type: type[_T] | None = None,
+        return_type: UndefinedType = Undefined,
+    ) -> Any: ...
+
+    @typing.overload
+    async def _patch(
+        self,
+        path: str,
+        *,
+        data: Any | None = None,
+        params: dict[str, Any] | None = None,
+        headers: dict[str, str] | None = None,
+        return_type: TypeAdapter[_T] | type[_T],
+    ) -> _T: ...
+
+    async def _patch(
+        self,
+        path: str,
+        *,
+        data: Any | None = None,
+        params: dict[str, Any] | None = None,
+        headers: dict[str, str] | None = None,
+        return_type: TypeAdapter[_T] | type[_T] | UndefinedType = Undefined,
     ) -> Any | _T:
         """Make a PATCH request."""
         return await self._request(
@@ -288,18 +403,42 @@ class BaseClient:
             return_type=return_type,
         )
 
+    @typing.overload
     async def _delete(
         self,
         path: str,
         *,
+        data: Any | None = None,
         params: dict[str, Any] | None = None,
         headers: dict[str, str] | None = None,
-        return_type: type[_T] | None = None,
+        return_type: UndefinedType = Undefined,
+    ) -> Any: ...
+
+    @typing.overload
+    async def _delete(
+        self,
+        path: str,
+        *,
+        data: Any | None = None,
+        params: dict[str, Any] | None = None,
+        headers: dict[str, str] | None = None,
+        return_type: TypeAdapter[_T] | type[_T],
+    ) -> _T: ...
+
+    async def _delete(
+        self,
+        path: str,
+        *,
+        data: Any | None = None,
+        params: dict[str, Any] | None = None,
+        headers: dict[str, str] | None = None,
+        return_type: TypeAdapter[_T] | type[_T] | UndefinedType = Undefined,
     ) -> Any | _T:
         """Make a DELETE request."""
         return await self._request(
             'DELETE',
             path,
+            data=data,
             params=params,
             headers=headers,
             return_type=return_type,

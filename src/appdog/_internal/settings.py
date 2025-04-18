@@ -39,6 +39,12 @@ class AppSettings(BaseSettings):
     filters: dict[str, str] | None = None
     """Filters to apply to mounted endpoints."""
 
+    timeout: float | None = None
+    """Request timeout in seconds."""
+
+    strict: bool | None = None
+    """Whether to raise an error for invalid response data."""
+
     @model_validator(mode='after')
     def model_validate_base_url(self) -> Self:
         if not self.base_url:
@@ -55,6 +61,7 @@ class AppSettings(BaseSettings):
                 'api_key_header',
                 'token_header',
                 'timeout',
+                'strict',
             },
         )
 
@@ -94,8 +101,11 @@ class ClientSettings(BaseSettings):
     token_header: str = 'Authorization'  # noqa: S105
     """Header name for bearer token."""
 
-    timeout: float = 30
+    timeout: float | None = 30
     """Request timeout in seconds."""
+
+    strict: bool | None = False
+    """Whether to raise an error for invalid response data."""
 
     @classmethod
     def with_env_prefix(cls, **data: Any) -> Self:
