@@ -1,3 +1,5 @@
+[![MseeP.ai Security Assessment Badge](https://mseep.net/pr/arya711139-appdog-badge.png)](https://mseep.ai/app/arya711139-appdog)
+
 # 🐶 AppDog: Effortless MCP Server Generation
 
 ![AppDog Logo](https://example.com/logo.png)
